@@ -336,6 +336,8 @@ void thread_yield(void)
   struct thread *cur = thread_current(); // Gets the current thread
   enum intr_level old_level;
 
+
+//test
   ASSERT(!intr_context());
 
   old_level = intr_disable(); // Disable interrupts
