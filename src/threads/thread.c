@@ -62,6 +62,8 @@ static long long user_ticks;   /* # of timer ticks in user programs. */
 /* Scheduling. */
 #define TIME_SLICE 1 /* # of timer ticks to give each thread. */ // Changes made from 4 to quanta of 1
 static unsigned thread_ticks;                                    /* # of timer ticks since last yield. */
+static unsigned global_ticks;                                    // (lab 3) A global tick to Keep track of the elasped time since the TIME PERIOD
+
 
 /* If false (default), use round-robin scheduler.
    If true, use multi-level feedback queue scheduler.
@@ -100,6 +102,7 @@ void thread_init(void)
   // list_init(&ready_list);
   list_init(&all_list);
   list_init(&sleeping_list); // Making a sleeping list (Changes)
+  global_ticks = 0;          // Set it to 0 (Lab 3)
   if (thread_mlfqs)
   {
     for (int i = PRI_MIN; i <= PRI_MAX; i++)
@@ -135,7 +138,19 @@ void thread_start(void)
 }
 
 // Add to rest all thread to highest priority (fix)
-
+void move_all_thread_to_top(){
+  struct list_elem *e;
+  for (e = list_begin(&all_list); e != list_end(&all_list); e = list_next(e))
+  {
+    struct thread *t = list_entry(e, struct thread, allelem);
+    t->priority = PRI_MAX;
+    if (t->status == THREAD_READY)
+    {
+      list_remove(&t->mlfq_elem);
+      list_push_back(&mlfq_queue[PRI_MAX], &t->mlfq_elem);
+    }
+  }
+}
 
 /* Called by the timer interrupt handler at each timer tick.
    Thus, this function runs in an external interrupt context. */
@@ -155,9 +170,18 @@ void thread_tick(void)
     kernel_ticks++;
 
   /* Enforce preemption. */
-  if (((++thread_ticks >= TIME_SLICE)&&!thread_mlfqs)||(thread_ticks > TIME_SLICE * (PRI_MAX-t->priority+1) && thread_mlfqs)) // Changes made for lab 3
-  { 
-    intr_yield_on_return();
+  if (thread_mlfqs)
+  {
+    if (++global_ticks >= TIME_PERIOD) // If the global ticks is greater than the time period
+    {
+      move_all_thread_to_top(); // Move all the threads to the highest priority
+      global_ticks = 0;         // Reset the global ticks
+    }
+    if (((++thread_ticks >= TIME_SLICE) && !thread_mlfqs) || (thread_ticks > TIME_SLICE * (PRI_MAX - t->priority + 1) && thread_mlfqs)) // Changes made for lab 3
+    {
+      //thread_ticks=0;
+      intr_yield_on_return();
+    }
   }
 }
 

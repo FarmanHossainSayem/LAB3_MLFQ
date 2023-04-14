@@ -25,7 +25,8 @@ typedef int tid_t;
 //#define PRI_DEFAULT 31                  /* Default priority. */
 #define PRI_MAX 19
 //#define PRI_MAX 63                      /* Highest priority. */
-//#define MLFQ_LEVELS 20                  /* Number of levels in the MLFQ. */ //Lab 3
+#define NUM_MLFQ 20                  /* Number of levels in the MLFQ. */ //Lab 3
+#define TIME_PERIOD 50                  /* Num of Time period to rest all threads Priorities . */ //Lab 3
 /* A kernel thread or user process.
 
    Each thread structure is stored in its own 4 kB page.  The

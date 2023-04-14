@@ -12,7 +12,7 @@
 #include "threads/synch.h"
 #include "threads/thread.h"
 
-#define NUM_MLFQS 40
+#define NUM_MLFQS 20
 
 struct thread_info 
   {
